@@ -2,12 +2,13 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::{
     parenthesized,
-    parse::{Parse, ParseStream, Parser},
+    parse::{Parse, ParseStream},
     parse_macro_input,
     punctuated::Punctuated,
     Expr, Ident, ItemFn, Result, Token,
 };
 
+#[derive(Clone)]
 struct TestArgument {
     name: Ident,
     args: Expr,
@@ -35,18 +36,37 @@ impl Parse for TestArgument {
     }
 }
 
+struct PTestArgs {
+    test_name: Ident,
+    test_arguments: Vec<TestArgument>,
+}
+
+impl Parse for PTestArgs {
+    fn parse(input: ParseStream) -> Result<Self> {
+        let test_name = input.parse::<Ident>()?;
+        let _ = input.parse::<Token![,]>()?;
+        let arguments = Punctuated::<TestArgument, Token![,]>::parse_terminated(input).unwrap();
+        let mut test_arguments: Vec<TestArgument> = Vec::new();
+        for a in arguments.iter() {
+            test_arguments.push(a.clone());
+        }
+        Ok(PTestArgs {
+            test_name,
+            test_arguments,
+        })
+    }
+}
+
 #[proc_macro_attribute]
 pub fn p_test(attr: TokenStream, item: TokenStream) -> TokenStream {
-    let mut output = quote! {};
-    let attr = Punctuated::<TestArgument, Token![,]>::parse_terminated
-        .parse(attr)
-        .unwrap();
+    let ptest_args = parse_macro_input!(attr as PTestArgs);
 
     let input = parse_macro_input!(item as ItemFn);
     let fn_sig = &input.sig;
     let fn_name = &input.sig.ident;
     let fn_block = &input.block;
 
+    let mut output = quote! {};
     output.extend(quote! {
         #fn_sig {
             #fn_block
@@ -55,7 +75,7 @@ pub fn p_test(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let mut test_functions = quote! {};
 
-    for pt_arg in attr.iter() {
+    for pt_arg in ptest_args.test_arguments {
         let name = &pt_arg.name;
         let args = &pt_arg.args;
         let expected = &pt_arg.expected;
@@ -63,18 +83,15 @@ pub fn p_test(attr: TokenStream, item: TokenStream) -> TokenStream {
         test_functions.extend(quote! {
             #[test]
             fn #name() {
-                // if let Some(exp) = #expected {
-                    assert_eq!(#fn_name #args, #expected);
-                // } else {
-                //     #fn_name #args;
-                // }
+                #fn_name(#args, #expected);
             }
         });
     }
 
+    let test_name = ptest_args.test_name;
     output.extend(quote! {
         #[cfg(test)]
-        mod tests {
+        mod #test_name {
             use super::*;
             #test_functions
         }
