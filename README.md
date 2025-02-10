@@ -19,6 +19,9 @@ fn test_sum((a, b): (i32, i32), expected: i32) {
 }
 ```
 
+The first input to the attribute is test name, which will be translated to test module name.
+After that, you need to provide a list of tuples containing test case name, arguments (also tuple), and expected value.
+
 The output of the test run will be similar to:
 
 ```console
