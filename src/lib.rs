@@ -38,18 +38,14 @@ impl Parse for TestArgument {
 
 struct PTestArgs {
     test_name: Ident,
-    test_arguments: Vec<TestArgument>,
+    test_arguments: Punctuated<TestArgument, Token![,]>,
 }
 
 impl Parse for PTestArgs {
     fn parse(input: ParseStream) -> Result<Self> {
         let test_name = input.parse::<Ident>()?;
         let _ = input.parse::<Token![,]>()?;
-        let arguments = Punctuated::<TestArgument, Token![,]>::parse_terminated(input).unwrap();
-        let mut test_arguments: Vec<TestArgument> = Vec::new();
-        for a in arguments.iter() {
-            test_arguments.push(a.clone());
-        }
+        let test_arguments = Punctuated::<TestArgument, Token![,]>::parse_terminated(input).unwrap();
         Ok(PTestArgs {
             test_name,
             test_arguments,
