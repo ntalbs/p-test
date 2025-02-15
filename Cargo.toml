@@ -2,6 +2,9 @@
 name = "p-test"
 version = "0.1.0"
 edition = "2021"
+description = "p-test provides procedural macro to help you write parameterized tests easily."
+license = "MIT"
+license-file = "./LICENSE"
 
 [lib]
 proc-macro = true
