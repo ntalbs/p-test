@@ -1,6 +1,6 @@
 [package]
 name = "p-test"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "p-test provides procedural macro to help you write parameterized tests easily."
 repository = "https://github.com/ntalbs/p-test"
