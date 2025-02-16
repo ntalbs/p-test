@@ -8,7 +8,6 @@ use syn::{
     Expr, Ident, ItemFn, Result, Token,
 };
 
-#[derive(Clone)]
 struct TestArgument {
     name: Ident,
     args: Expr,
