@@ -44,7 +44,8 @@ impl Parse for PTestArgs {
     fn parse(input: ParseStream) -> Result<Self> {
         let test_name = input.parse::<Ident>()?;
         let _ = input.parse::<Token![,]>()?;
-        let test_arguments = Punctuated::<TestArgument, Token![,]>::parse_terminated(input).unwrap();
+        let test_arguments =
+            Punctuated::<TestArgument, Token![,]>::parse_terminated(input).unwrap();
         Ok(PTestArgs {
             test_name,
             test_arguments,
