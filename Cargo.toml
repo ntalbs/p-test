@@ -5,7 +5,8 @@ edition = "2021"
 description = "p-test provides procedural macro to help you write parameterized tests easily."
 repository = "https://github.com/ntalbs/p-test"
 license = "MIT"
-license-file = "./LICENSE"
+keywords = ["parameterized", "test", "unit-test"]
+categories = ["development-tools::testing"]
 
 [lib]
 proc-macro = true
