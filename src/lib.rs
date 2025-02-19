@@ -1,3 +1,5 @@
+#![doc = include_str!("../README.md")]
+
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::{
@@ -53,6 +55,7 @@ impl Parse for PTestArgs {
     }
 }
 
+/// The attribute that annotates function with arguments for parameterized test.
 #[proc_macro_attribute]
 pub fn p_test(attr: TokenStream, item: TokenStream) -> TokenStream {
     let ptest_args = parse_macro_input!(attr as PTestArgs);
