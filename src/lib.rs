@@ -38,14 +38,19 @@ impl Parse for TestArgument {
 }
 
 struct PTestArgs {
-    test_name: Ident,
+    test_name: Option<Ident>,
     test_arguments: Punctuated<TestArgument, Token![,]>,
 }
 
 impl Parse for PTestArgs {
     fn parse(input: ParseStream) -> Result<Self> {
-        let test_name = input.parse::<Ident>()?;
-        let _ = input.parse::<Token![,]>()?;
+        let test_name = if input.peek(Ident) {
+            let test_name = input.parse::<Ident>()?;
+            let _ = input.parse::<Token![,]>()?;
+            Some(test_name)
+        } else {
+            None
+        };
         let test_arguments =
             Punctuated::<TestArgument, Token![,]>::parse_terminated(input).unwrap();
         Ok(PTestArgs {
@@ -87,7 +92,7 @@ pub fn p_test(attr: TokenStream, item: TokenStream) -> TokenStream {
         });
     }
 
-    let test_name = ptest_args.test_name;
+    let test_name = ptest_args.test_name.unwrap_or(fn_name.clone());
     output.extend(quote! {
         #[cfg(test)]
         mod #test_name {
