@@ -79,5 +79,5 @@ fn test_sum((a, b): (i32, i32), expected: i32) {
 ```
 
 This may not be useful as we can use the function name as the module name.
-You still can privide the module name, in case you want to use different name
+You still can provide the module name, in case you want to use different name
 for module and test function. But it is mainly left for backward compatibility.
