@@ -52,7 +52,7 @@ impl Parse for PTestArgs {
             None
         };
         let test_arguments =
-            Punctuated::<TestArgument, Token![,]>::parse_terminated(input).unwrap();
+            Punctuated::<TestArgument, Token![,]>::parse_terminated(input)?;
         Ok(PTestArgs {
             test_name,
             test_arguments,
