@@ -10,6 +10,10 @@ use syn::{
     Expr, Ident, ItemFn, Result, Token,
 };
 
+/// Input for `p_test` attribute, consists of test name (optional),
+/// and a list of test cases. The test name will be used as a module name
+/// for the test. When the name is omitted, the test function name
+/// will be used instead.
 struct Input {
     test_name: Option<Ident>,
     test_cases: Punctuated<TestCase, Token![,]>,
@@ -33,6 +37,8 @@ impl Parse for Input {
     }
 }
 
+/// Represent test case, consists of case name, arguments for the test function,
+/// and the expected value (optional).
 struct TestCase {
     name: Ident,
     args: Expr,
