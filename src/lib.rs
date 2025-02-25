@@ -63,36 +63,36 @@ impl Parse for TestCase {
 /// The attribute that annotates function with arguments for parameterized test.
 #[proc_macro_attribute]
 pub fn p_test(attr: TokenStream, item: TokenStream) -> TokenStream {
-    let ptest_args = parse_macro_input!(attr as Input);
+    let attr_input = parse_macro_input!(attr as Input);
 
-    let input = parse_macro_input!(item as ItemFn);
-    let fn_sig = &input.sig;
-    let fn_name = &input.sig.ident;
-    let fn_block = &input.block;
+    let item = parse_macro_input!(item as ItemFn);
+    let p_test_fn_sig = &item.sig;
+    let p_test_fn_name = &item.sig.ident;
+    let p_test_fn_block = &item.block;
 
     let mut output = quote! {};
     output.extend(quote! {
-        #fn_sig {
-            #fn_block
+        #p_test_fn_sig {
+            #p_test_fn_block
         }
     });
 
     let mut test_functions = quote! {};
 
-    for pt_arg in ptest_args.test_cases {
-        let name = &pt_arg.name;
-        let args = &pt_arg.args;
-        let expected = &pt_arg.expected;
+    for case in attr_input.test_cases {
+        let name = &case.name;
+        let args = &case.args;
+        let expected = &case.expected;
 
         test_functions.extend(quote! {
             #[test]
             fn #name() {
-                #fn_name(#args, #expected);
+                #p_test_fn_name(#args, #expected);
             }
         });
     }
 
-    let test_name = ptest_args.test_name.unwrap_or(fn_name.clone());
+    let test_name = attr_input.test_name.unwrap_or(p_test_fn_name.clone());
     output.extend(quote! {
         #[cfg(test)]
         mod #test_name {
