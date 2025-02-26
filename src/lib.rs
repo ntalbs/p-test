@@ -65,7 +65,7 @@ impl Parse for TestCase {
     }
 }
 
-/// The attribute that annotates function with arguments for parameterized test.
+/// The attribute that annotates a function with arguments for parameterized test.
 #[proc_macro_attribute]
 pub fn p_test(attr: TokenStream, item: TokenStream) -> TokenStream {
     let attr_input = parse_macro_input!(attr as Input);
