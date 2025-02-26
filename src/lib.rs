@@ -28,8 +28,7 @@ impl Parse for Input {
         } else {
             None
         };
-        let test_cases =
-            Punctuated::<TestCase, Token![,]>::parse_terminated(input)?;
+        let test_cases = Punctuated::<TestCase, Token![,]>::parse_terminated(input)?;
         Ok(Input {
             test_name,
             test_cases,
