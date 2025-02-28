@@ -14,11 +14,76 @@ fn sum(a: i32, b: i32) -> i32 {
 You can write a parameterized test with `p_test` macro like this:
 
 ```rust
+#[p_test(
+    (sum_1_1, 1, 1, 2), // test case sum_1_1
+    (sum_2_3, 2, 3, 5), // test case sum_2_3
+    (sum_4_5, 4, 5, 9), // test case sum_4_5
+)]
+fn test_sum(a: i32, b: i32, expected: i32) {
+    assert_eq!(sum(a, b), expected);
+}
+```
+
+The input for the `p_test` attribute is a list of tuples, where each
+tuple represents a test case. The format of the test case tuple is
+`(case_name, args, ...)`. `case_name` should be a valid function name
+as it will be expanded to a test function.
+
+```rust
+// This parameterized function is copied
+fn test_sum(expected: i32, a: i32, b: i32) {
+    assert_eq!(sum(a, b), expected);
+}
+
+// The macro expanded.
+// Each of the case name become a test function
+// which invokes parameterized function.
+#[cfg(test)]
+mod test_sum {
+    use super::*;
+    #[test]
+    fn sum_1_1() {
+        test_sum(2, 1, 1);
+    }
+    #[test]
+    fn sum_2_3() {
+        test_sum(5, 2, 3);
+    }
+    #[test]
+    fn sum_4_5() {
+        test_sum(9, 4, 5);
+    }
+}
+```
+
+
+We set the expected value at the end of each test case. But the order
+of arguments are totally up to you. You can use the first argument as
+an expected value.
+
+```rust
+#[p_test(
+    (sum_1_1, 2, 1, 1),
+    (sum_2_3, 5, 2, 3),
+    (sum_4_5, 9, 4, 5),
+)]
+fn test_sum(expected: i32, a: i32, b: i32) {
+    assert_eq!(sum(a, b), expected);
+}
+```
+
+But the order should match with the parameter list of the test
+function, `test_sum` in this example.
+
+If you explicitly distinguish the argument list and the expected
+value, you can use tuple for argument list.
+
+```rust
 use p_test::p_test;
 
 // Parameterized test
 #[p_test(
-    (sum_1_1, (1, 1), 2),  // test case sum_1_1: (test_case_name, (arguments, ...), expected)
+    (sum_1_1, (1, 1), 2),  // test case sum_1_1
     (sum_2_3, (2, 3), 5),  // test case sum_2_3
     (sum_4_5, (4, 5), 9),  // test case sum_4_5
 )]
@@ -27,13 +92,11 @@ fn test_sum((a, b): (i32, i32), expected: i32) {
 }
 ```
 
-The input for the `p_test` attribute is a list of tuples, where each
-tuple represents a test case. The format of the test case tuple is
-`(case_name, (argument_list), expected)`. The `(argument_list)` inside
-the test case tuple is another tuple that represents the argument of
-the function to test. The test function name `test_sum` will be used
-to test module name. The above example will be expanded like the
-following:
+The format of the test case tuple is `(case_name, (argument_list),
+expected)`. The `(argument_list)` inside the test case tuple is
+another tuple that represents the argument of the function to
+test. The test function name `test_sum` will be used to test module
+name. The above example will be expanded like the following:
 
 ```rust
 // This parameterized function is copied
@@ -79,6 +142,8 @@ failed.  This is especially useful when you have long list of test
 cases.
 
 ## Note
+Before `0.1.5`, argument list should be distinguished by a tuple.
+
 Before `0.1.3`, it was required to provide the test module name.
 
 ```rust
