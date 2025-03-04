@@ -41,14 +41,14 @@ impl Parse for Input {
 enum TestCase {
     /// (case_name, (args...), expected)
     V1 {
-        name: Ident,
+        name: Option<Ident>,
         args: Expr,
         expected: Option<Expr>,
     },
     /// (case_name, args...)
     /// One of the args can be used as expected
     V2 {
-        name: Ident,
+        name: Option<Ident>,
         args: Punctuated<Expr, Token![,]>,
     },
 }
@@ -57,8 +57,13 @@ impl Parse for TestCase {
     fn parse(input: ParseStream) -> Result<Self> {
         let content;
         let _ = parenthesized!(content in input);
-        let name = content.parse()?;
-        let _ = content.parse::<Token![,]>()?;
+        let name = if content.peek(Ident) {
+            let name = content.parse()?;
+            let _ = content.parse::<Token![,]>()?;
+            Some(name)
+        } else {
+            None
+        };
 
         if content.peek(syn::token::Paren) {
             let args = content.parse()?;
@@ -77,6 +82,23 @@ impl Parse for TestCase {
             let args = Punctuated::<Expr, Token![,]>::parse_terminated(&content)?;
             Ok(TestCase::V2 { name, args })
         }
+    }
+}
+
+fn test_case_name(name: Option<Ident>, counter: i32, n_all: usize) -> Ident {
+    if let Some(name) = name {
+        name
+    } else {
+        let name = if n_all < 10 { 
+            &format!("case_{counter}")
+        } else if n_all < 100 {
+            &format!("case_{counter:02}")
+        } else if n_all < 1000 {
+            &format!("case_{counter:03}")
+        } else {
+            &format!("case_{counter}")
+        };
+        Ident::new(name, proc_macro::Span::call_site().into())
     }
 }
 
@@ -99,19 +121,26 @@ pub fn p_test(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let mut test_functions = quote! {};
 
+    let mut counter = 0;
+    let n_all = attr_input.test_cases.len();
     for case in attr_input.test_cases {
+        counter += 1;
         match case {
             TestCase::V1 {
                 name,
                 args,
                 expected,
-            } => test_functions.extend(quote! {
-                #[test]
-                fn #name() {
-                    #p_test_fn_name(#args, #expected);
-                }
-            }),
+            } => {
+                let name = test_case_name(name, counter, n_all);
+                test_functions.extend(quote! {
+                    #[test]
+                    fn #name() {
+                        #p_test_fn_name(#args, #expected);
+                    }
+                })
+            },
             TestCase::V2 { name, args } => {
+                let name = test_case_name(name, counter, n_all);
                 let mut arg_list = quote! {};
                 for e in args {
                     arg_list.extend(quote! { #e, });
