@@ -134,12 +134,40 @@ running 3 tests
 test test_sum::sum_1_1 ... ok
 test test_sum::sum_2_3 ... ok
 test test_sum::sum_4_5 ... ok
+
 test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 ```
 
 Each test case has their name, so you can find which test cases
 failed.  This is especially useful when you have long list of test
 cases.
+
+## Skipping test case name
+If you don't care about test case names but just want to provide test
+data, you can skip the test case names.
+
+```rust
+#[p_test(
+    (1, 1, 2),
+    (2, 3, 5),
+    (4, 5, 9),
+)]
+fn test_sum(a: i32, b: i32, expected: i32) {
+    assert_eq!(sum(a, b), expected);
+}
+```
+
+In this case, the case names will be auto-generated as `case_{n}`, and
+the test output will be look like the following:
+```console
+$ cargo test
+...
+test test_sum_no_name::case_1 ... ok
+test test_sum_no_name::case_2 ... ok
+test test_sum_no_name::case_3 ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+```
 
 ## Note
 Before `0.1.5`, argument list should be distinguished by a tuple.
