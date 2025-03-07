@@ -16,7 +16,7 @@ use syn::{
 /// will be used instead.
 struct Input {
     test_name: Option<Ident>,
-    test_cases: Punctuated<TestCase, Token![,]>,
+    test_cases: Vec<TestCase>,
 }
 
 impl Parse for Input {
@@ -28,7 +28,9 @@ impl Parse for Input {
         } else {
             None
         };
-        let test_cases = Punctuated::<TestCase, Token![,]>::parse_terminated(input)?;
+        let test_cases = Punctuated::<TestCase, Token![,]>::parse_terminated(input)?
+            .into_iter()
+            .collect();
         Ok(Input {
             test_name,
             test_cases,
@@ -49,7 +51,7 @@ enum TestCase {
     /// One of the args can be used as expected
     V2 {
         name: Option<Ident>,
-        args: Punctuated<Expr, Token![,]>,
+        args: Vec<Expr>,
     },
 }
 
@@ -79,7 +81,9 @@ impl Parse for TestCase {
                 expected,
             })
         } else {
-            let args = Punctuated::<Expr, Token![,]>::parse_terminated(&content)?;
+            let args: Vec<Expr> = Punctuated::<Expr, Token![,]>::parse_terminated(&content)?
+                .into_iter()
+                .collect();
             Ok(TestCase::V2 { name, args })
         }
     }
