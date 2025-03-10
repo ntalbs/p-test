@@ -48,7 +48,7 @@ enum TestCase {
         expected: Option<Expr>,
     },
     /// (case_name, args...)
-    /// One of the args can be used as expected
+    /// One of the args can be used as an expected value.
     V2 {
         name: Option<Ident>,
         args: Vec<Expr>,
