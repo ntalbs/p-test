@@ -93,7 +93,7 @@ fn test_case_name(name: Option<Ident>, counter: i32, n_all: usize) -> Ident {
     if let Some(name) = name {
         name
     } else {
-        let name = if n_all < 10 { 
+        let name = if n_all < 10 {
             &format!("case_{counter}")
         } else if n_all < 100 {
             &format!("case_{counter:02}")
@@ -142,7 +142,7 @@ pub fn p_test(attr: TokenStream, item: TokenStream) -> TokenStream {
                         #p_test_fn_name(#args, #expected);
                     }
                 })
-            },
+            }
             TestCase::V2 { name, args } => {
                 let name = test_case_name(name, counter, n_all);
                 let mut arg_list = quote! {};
