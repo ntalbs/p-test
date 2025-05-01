@@ -116,12 +116,11 @@ pub fn p_test(attr: TokenStream, item: TokenStream) -> TokenStream {
     let p_test_fn_name = &item.sig.ident;
     let p_test_fn_block = &item.block;
 
-    let mut output = quote! {};
-    output.extend(quote! {
+    let mut output = quote! {
         #p_test_fn_sig {
             #p_test_fn_block
         }
-    });
+    };
 
     let mut test_functions = quote! {};
 
