@@ -45,7 +45,7 @@ enum TestCase {
     V1 {
         name: Option<Ident>,
         args: Expr,
-        expected: Option<Expr>,
+        expected: Box<Option<Expr>>,
     },
     /// (case_name, args...)
     /// One of the args can be used as an expected value.
@@ -71,9 +71,9 @@ impl Parse for TestCase {
             let args = content.parse()?;
             let expected = if content.peek(Token![,]) {
                 let _ = content.parse::<Token![,]>()?;
-                Some(content.parse()?)
+                Box::new(Some(content.parse()?))
             } else {
-                None
+                Box::new(None)
             };
             Ok(TestCase::V1 {
                 name,
