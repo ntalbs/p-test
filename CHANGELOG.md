@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.7]
+Internal changes:
+- Simplified the macro parsing logic. 
+- Removed unnecessary code.
+- Added tests.
+
 ## [0.1.6]
 Test case name is optional. When case name is skipped, case name will be generated in `case_{n}` format.
 
