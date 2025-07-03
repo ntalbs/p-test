@@ -38,21 +38,14 @@ impl Parse for Input {
     }
 }
 
-/// Represent test case, consists of case name, arguments for the test function,
-/// and the expected value (optional).
-enum TestCase {
-    /// (case_name, (args...), expected)
-    V1 {
-        name: Option<Ident>,
-        args: Expr,
-        expected: Box<Option<Expr>>,
-    },
-    /// (case_name, args...)
-    /// One of the args can be used as an expected value.
-    V2 {
-        name: Option<Ident>,
-        args: Vec<Expr>,
-    },
+/// Represent test case, consists of case name (optional), 
+/// and a list of arguments for the test function, (case_name, args...)
+/// One of the args can be used as an expected value.
+/// If the case name is omitted, the case name will be generated 
+/// in `case_{n}` format, where `n` is the case number.
+struct TestCase {
+    name: Option<Ident>,
+    args: Vec<Expr>,
 }
 
 impl Parse for TestCase {
@@ -66,26 +59,10 @@ impl Parse for TestCase {
         } else {
             None
         };
-
-        if content.peek(syn::token::Paren) {
-            let args = content.parse()?;
-            let expected = if content.peek(Token![,]) {
-                let _ = content.parse::<Token![,]>()?;
-                Box::new(Some(content.parse()?))
-            } else {
-                Box::new(None)
-            };
-            Ok(TestCase::V1 {
-                name,
-                args,
-                expected,
-            })
-        } else {
             let args: Vec<Expr> = Punctuated::<Expr, Token![,]>::parse_terminated(&content)?
                 .into_iter()
                 .collect();
-            Ok(TestCase::V2 { name, args })
-        }
+            Ok(TestCase { name, args })
     }
 }
 
@@ -126,36 +103,19 @@ pub fn p_test(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let mut counter = 0;
     let n_all = attr_input.test_cases.len();
-    for case in attr_input.test_cases {
+    for TestCase { name, args} in attr_input.test_cases {
         counter += 1;
-        match case {
-            TestCase::V1 {
-                name,
-                args,
-                expected,
-            } => {
-                let name = test_case_name(name, counter, n_all);
-                test_functions.extend(quote! {
-                    #[test]
-                    fn #name() {
-                        #p_test_fn_name(#args, #expected);
-                    }
-                })
-            }
-            TestCase::V2 { name, args } => {
-                let name = test_case_name(name, counter, n_all);
-                let mut arg_list = quote! {};
-                for e in args {
-                    arg_list.extend(quote! { #e, });
-                }
-                test_functions.extend(quote! {
-                    #[test]
-                    fn #name() {
-                        #p_test_fn_name(#arg_list);
-                    }
-                })
-            }
+        let name = test_case_name(name, counter, n_all);
+        let mut arg_list = quote! {};
+        for e in args {
+            arg_list.extend(quote! { #e, });
         }
+        test_functions.extend(quote! {
+            #[test]
+            fn #name() {
+                #p_test_fn_name(#arg_list);
+            }
+        })
     }
 
     let test_name = attr_input.test_name.unwrap_or(p_test_fn_name.clone());
