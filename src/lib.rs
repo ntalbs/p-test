@@ -7,7 +7,7 @@ use syn::{
     parse::{Parse, ParseStream},
     parse_macro_input,
     punctuated::Punctuated,
-    Expr, Ident, ItemFn, Result, Token,
+    Expr, Ident, ItemFn, Result, Token, LitStr,
 };
 
 /// Input for `p_test` attribute, consists of test name (optional),
@@ -44,7 +44,7 @@ impl Parse for Input {
 /// If the case name is omitted, the case name will be generated 
 /// in `case_{n}` format, where `n` is the case number.
 struct TestCase {
-    name: Option<Ident>,
+    name: Option<LitStr>,
     args: Vec<Expr>,
 }
 
@@ -52,7 +52,7 @@ impl Parse for TestCase {
     fn parse(input: ParseStream) -> Result<Self> {
         let content;
         let _ = parenthesized!(content in input);
-        let name = if content.peek(Ident) {
+        let name = if content.peek(LitStr) {
             let name = content.parse()?;
             let _ = content.parse::<Token![,]>()?;
             Some(name)
@@ -66,21 +66,35 @@ impl Parse for TestCase {
     }
 }
 
-fn test_case_name(name: Option<Ident>, counter: i32, n_all: usize) -> Ident {
-    if let Some(name) = name {
-        name
+fn test_case_name(name: Option<LitStr>, counter: i32, n_all: usize) -> Ident {
+    let n = if let Some(name) = name {
+        slugify(&name.value())
     } else {
-        let name = if n_all < 10 {
-            &format!("case_{counter}")
+        if n_all < 10 {
+            format!("case_{counter}")
         } else if n_all < 100 {
-            &format!("case_{counter:02}")
+            format!("case_{counter:02}")
         } else if n_all < 1000 {
-            &format!("case_{counter:03}")
+            format!("case_{counter:03}")
         } else {
-            &format!("case_{counter}")
-        };
-        Ident::new(name, proc_macro::Span::call_site().into())
+            format!("case_{counter}")
+        }
+    };
+    Ident::new(&n, proc_macro::Span::call_site().into())
+}
+
+fn slugify(name: &str) -> String {
+    let mut s: String = name
+        .to_ascii_lowercase()
+        .chars()
+        .map(|c| if c.is_alphanumeric() { c } else { '_' })
+        .collect();
+
+    if s.starts_with(|c: char| c.is_numeric()) {
+        s.insert(0, '_');
     }
+
+    s
 }
 
 /// The attribute that annotates a function with arguments for parameterized test.
