@@ -7,15 +7,21 @@ use syn::{
     parse::{Parse, ParseStream},
     parse_macro_input,
     punctuated::Punctuated,
-    Expr, Ident, ItemFn, Result, Token,
+    Expr, Ident, ItemFn, LitStr, Result, Token,
 };
+
+enum Name {
+    Ident(Ident),
+    LitStr(LitStr),
+    None,
+}
 
 /// Input for `p_test` attribute, consists of test name (optional),
 /// and a list of test cases. The test name will be used as a module name
 /// for the test. When the name is omitted, the test function name
 /// will be used instead.
 struct Input {
-    test_name: Option<Ident>,
+    test_name: Name,
     test_cases: Vec<TestCase>,
 }
 
@@ -24,10 +30,19 @@ impl Parse for Input {
         let test_name = if input.peek(Ident) {
             let test_name = input.parse::<Ident>()?;
             let _ = input.parse::<Token![,]>()?;
-            Some(test_name)
+            Name::Ident(test_name)
+        } else if input.peek(LitStr) {
+            let test_name = input.parse::<LitStr>()?;
+            let _ = input.parse::<Token![,]>()?;
+            if test_name.value().is_empty() {
+                Name::None
+            } else {
+                Name::LitStr(test_name)
+            }
         } else {
-            None
+            Name::None
         };
+
         let test_cases = Punctuated::<TestCase, Token![,]>::parse_terminated(input)?
             .into_iter()
             .collect();
@@ -38,13 +53,13 @@ impl Parse for Input {
     }
 }
 
-/// Represent test case, consists of case name (optional), 
+/// Represent test case, consists of case name (optional),
 /// and a list of arguments for the test function, (case_name, args...)
 /// One of the args can be used as an expected value.
-/// If the case name is omitted, the case name will be generated 
+/// If the case name is omitted, the case name will be generated
 /// in `case_{n}` format, where `n` is the case number.
 struct TestCase {
-    name: Option<Ident>,
+    name: Name,
     args: Vec<Expr>,
 }
 
@@ -53,34 +68,67 @@ impl Parse for TestCase {
         let content;
         let _ = parenthesized!(content in input);
         let name = if content.peek(Ident) {
-            let name = content.parse()?;
+            let name = content.parse::<Ident>()?;
             let _ = content.parse::<Token![,]>()?;
-            Some(name)
+            Name::Ident(name)
+        } else if content.peek(LitStr) {
+            let name = content.parse::<LitStr>()?;
+            let _ = content.parse::<Token![,]>()?;
+            if name.value().is_empty() {
+                Name::None
+            } else {
+                Name::LitStr(name)
+            }
         } else {
-            None
+            Name::None
         };
-            let args: Vec<Expr> = Punctuated::<Expr, Token![,]>::parse_terminated(&content)?
-                .into_iter()
-                .collect();
-            Ok(TestCase { name, args })
+
+        let args: Vec<Expr> = Punctuated::<Expr, Token![,]>::parse_terminated(&content)?
+            .into_iter()
+            .collect();
+        Ok(TestCase { name, args })
     }
 }
 
-fn test_case_name(name: Option<Ident>, counter: i32, n_all: usize) -> Ident {
-    if let Some(name) = name {
-        name
-    } else {
-        let name = if n_all < 10 {
-            &format!("case_{counter}")
-        } else if n_all < 100 {
-            &format!("case_{counter:02}")
-        } else if n_all < 1000 {
-            &format!("case_{counter:03}")
-        } else {
-            &format!("case_{counter}")
-        };
-        Ident::new(name, proc_macro::Span::call_site().into())
+fn test_name(name: Name, test_fn_name: &Ident) -> Ident {
+    match name {
+        Name::Ident(name) => name,
+        Name::LitStr(lit_str) => Ident::new(&slugify(&lit_str.value()), lit_str.span()),
+        Name::None => test_fn_name.clone(),
     }
+}
+
+fn test_case_name(name: Name, counter: i32, n_all: usize) -> Ident {
+    match name {
+        Name::Ident(name) => name,
+        Name::LitStr(name) => Ident::new(&slugify(&name.value()), name.span()),
+        Name::None => {
+            let name = if n_all < 10 {
+                &format!("case_{counter}")
+            } else if n_all < 100 {
+                &format!("case_{counter:02}")
+            } else if n_all < 1000 {
+                &format!("case_{counter:03}")
+            } else {
+                &format!("case_{counter}")
+            };
+            Ident::new(name, proc_macro::Span::call_site().into())
+        }
+    }
+}
+
+fn slugify(name: &str) -> String {
+    let mut s: String = name
+        .to_ascii_lowercase()
+        .chars()
+        .map(|c| if c.is_alphanumeric() { c } else { '_' })
+        .collect();
+
+    if s.starts_with(|c: char| c.is_numeric()) {
+        s.insert(0, '_');
+    }
+
+    s
 }
 
 /// The attribute that annotates a function with arguments for parameterized test.
@@ -103,7 +151,7 @@ pub fn p_test(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let mut counter = 0;
     let n_all = attr_input.test_cases.len();
-    for TestCase { name, args} in attr_input.test_cases {
+    for TestCase { name, args } in attr_input.test_cases {
         counter += 1;
         let name = test_case_name(name, counter, n_all);
         let mut arg_list = quote! {};
@@ -118,7 +166,7 @@ pub fn p_test(attr: TokenStream, item: TokenStream) -> TokenStream {
         })
     }
 
-    let test_name = attr_input.test_name.unwrap_or(p_test_fn_name.clone());
+    let test_name = test_name(attr_input.test_name, p_test_fn_name);
     output.extend(quote! {
         #[cfg(test)]
         mod #test_name {

@@ -4,25 +4,37 @@ fn sum(a: i32, b: i32) -> i32 {
     a + b
 }
 
-/// Case 1:
-/// - module name: O
+/// - module name: Ident
 /// - arguments: simple list
-/// - case name: O
+/// - case name: Ident
 #[p_test(
-    test_module_name_1,
+    test_module_name_1_ident,
     (sum_1_1, 1, 1, 2),
     (sum_1_2, 1, 2, 3),
     (sum_2_2, 2, 2, 4),
     (sum_2_3, 2, 3, 5),
 )]
-fn test_sum_with_module_name(a: i32, b: i32, expected: i32) {
+fn test_sum_with_module_name_ident(a: i32, b: i32, expected: i32) {
     assert_eq!(sum(a, b), expected);
 }
 
-/// Case 2:
-/// - module name: x
+/// - module name: LitStr
 /// - arguments: simple list
-/// - case name: O
+/// - case name: Ident
+#[p_test(
+    "test module name 1 literal string",
+    ("sum(1,1)", 1, 1, 2),
+    ("sum(1,2)", 1, 2, 3),
+    ("sum(2,2)", 2, 2, 4),
+    ("sum(2,3)", 2, 3, 5),
+)]
+fn test_sum_with_module_name_litstr(a: i32, b: i32, expected: i32) {
+    assert_eq!(sum(a, b), expected);
+}
+
+/// - module name: None
+/// - arguments: simple list
+/// - case name: Ident
 #[p_test(
     (sum_1_1, 1, 1, 2),
     (sum_1_2, 1, 2, 3),
@@ -33,25 +45,50 @@ fn test_sum_no_without_module_name(a: i32, b: i32, expected: i32) {
     assert_eq!(sum(a, b), expected);
 }
 
-/// Case 3:
-/// - module name: O
-/// - arguments: tuple for function arguments, expected value is separeted.
-/// - case name: O
+/// - module name: None
+/// - arguments: simple list
+/// - case name: LitStr
 #[p_test(
-    test_module_name_2,
+    ("sum(1,1)", 1, 1, 2),
+    ("sum(1,2))", 1, 2, 3),
+    ("sum(2,2)", 2, 2, 4),
+    ("sum(2,3)", 2, 3, 5),
+)]
+fn test_sum_no_without_module_name_test_case_name_litstr(a: i32, b: i32, expected: i32) {
+    assert_eq!(sum(a, b), expected);
+}
+
+/// - module name: Ident
+/// - arguments: tuple for function arguments, expected value is separeted.
+/// - case name: Ident
+#[p_test(
+    test_module_name_2_ident,
     (sum_1_1, (1, 1), 2),
     (sum_1_2, (1, 2), 3),
     (sum_2_2, (2, 2), 4),
     (sum_2_3, (2, 3), 5),
 )]
-fn test_sum_arg_tuple_with_module_name((a, b): (i32, i32), expected: i32) {
+fn test_sum_arg_tuple_with_module_name_ident((a, b): (i32, i32), expected: i32) {
     assert_eq!(sum(a, b), expected);
 }
 
-/// Case 3:
-/// - module name: O
+/// - module name: Ident
 /// - arguments: tuple for function arguments, expected value is separeted.
-/// - case name: O
+/// - case name: Ident
+#[p_test(
+    "test module name 2 literal string",
+    (sum_1_1, (1, 1), 2),
+    (sum_1_2, (1, 2), 3),
+    (sum_2_2, (2, 2), 4),
+    (sum_2_3, (2, 3), 5),
+)]
+fn test_sum_arg_tuple_with_module_name_litstr((a, b): (i32, i32), expected: i32) {
+    assert_eq!(sum(a, b), expected);
+}
+
+/// - module name: None
+/// - arguments: tuple for function arguments, expected value is separeted.
+/// - case name: Ident
 #[p_test(
     (sum_1_1, (1, 1), 2),
     (sum_1_2, (1, 2), 3),
@@ -62,25 +99,41 @@ fn test_sum_arg_tuple_without_module_name((a, b): (i32, i32), expected: i32) {
     assert_eq!(sum(a, b), expected);
 }
 
-/// Case 5:
-/// - module name: O
+/// - module name: Ident
 /// - arguments: simple list
-/// - case name: x
+/// - case name: None
 #[p_test(
-    test_module_name_3,
+    test_module_name_3_ident,
     (1, 1, 2),
     (1, 2, 3),
     (2, 2, 4),
     (2, 3, 5),
 )]
-fn test_sum_with_module_name_no_case_name(a: i32, b: i32, expected: i32) {
+fn test_sum_with_module_name_ident_no_case_name(a: i32, b: i32, expected: i32) {
     assert_eq!(sum(a, b), expected);
 }
 
-/// Case 6:
-/// - module name: x
+/// - module name: Ident
 /// - arguments: simple list
-/// - case name: x
+/// - case name: None
+#[p_test(
+    "test module name 3 literal string",
+    (1, 1, 2),
+    (1, 2, 3),
+    (2, 2, 4),
+    (2, 3, 5),
+    (1, 1, 2),
+    (1, 2, 3),
+    (2, 2, 4),
+    (2, 3, 5),
+)]
+fn test_sum_with_module_name_litstr_no_case_name(a: i32, b: i32, expected: i32) {
+    assert_eq!(sum(a, b), expected);
+}
+
+/// - module name: None
+/// - arguments: simple list
+/// - case name: None
 #[p_test(
     (1, 1, 2),
     (1, 2, 3),
@@ -91,10 +144,9 @@ fn test_sum_no_without_module_name_no_case_name(a: i32, b: i32, expected: i32) {
     assert_eq!(sum(a, b), expected);
 }
 
-/// Case 7:
-/// - module name: O
+/// - module name: Ident
 /// - arguments: tuple for function arguments, expected value is separeted.
-/// - case name: x
+/// - case name: None
 #[p_test(
     test_module_name_4,
     ((1, 1), 2),
@@ -102,14 +154,31 @@ fn test_sum_no_without_module_name_no_case_name(a: i32, b: i32, expected: i32) {
     ((2, 2), 4),
     ((2, 3), 5),
 )]
-fn test_sum_arg_tuple_with_module_nameno_case_name((a, b): (i32, i32), expected: i32) {
+fn test_sum_arg_tuple_with_module_name_ident_no_case_name((a, b): (i32, i32), expected: i32) {
     assert_eq!(sum(a, b), expected);
 }
 
-/// Case 8:
-/// - module name: x
+/// - module name: Ident
 /// - arguments: tuple for function arguments, expected value is separeted.
-/// - case name: x
+/// - case name: None
+#[p_test(
+    "test module name 4 literal string",
+    ((1, 1), 2),
+    ((1, 2), 3),
+    ((2, 2), 4),
+    ((2, 3), 5),
+    ((1, 1), 2),
+    ((1, 2), 3),
+    ((2, 2), 4),
+    ((2, 3), 5),
+)]
+fn test_sum_arg_tuple_with_module_name_litstr_no_case_name((a, b): (i32, i32), expected: i32) {
+    assert_eq!(sum(a, b), expected);
+}
+
+/// - module name: None
+/// - arguments: tuple for function arguments, expected value is separeted.
+/// - case name: None
 #[p_test(
     ((1, 1), 2),
     ((1, 2), 3),
@@ -120,7 +189,6 @@ fn test_sum_arg_tuple_without_module_nameno_case_name((a, b): (i32, i32), expect
     assert_eq!(sum(a, b), expected);
 }
 
-/// Case 9:
 /// number of cases is more than 10 to check that the case name is generated in correct format.
 #[p_test(
     (1, 1, 2),
