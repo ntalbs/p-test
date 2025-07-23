@@ -1,8 +1,11 @@
 # Changelog
 
+## [0.1.8]
+Support literal string for test name and test case name.
+
 ## [0.1.7]
 Internal changes:
-- Simplified the macro parsing logic. 
+- Simplified the macro parsing logic.
 - Removed unnecessary code.
 - Added tests.
 

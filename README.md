@@ -29,6 +29,24 @@ tuple represents a test case. The format of the test case tuple is
 `(case_name, args, ...)`. `case_name` should be a valid function name
 as it will be expanded to a test function.
 
+You can use literal string for case name, like the following:
+
+```rust
+#[p_test(
+    ("sum(1, 1)", 1, 1, 2),
+    ("sum(2, 3)", 2, 3, 5),
+    ("sum(4, 5)", 4, 5, 9),
+)]
+fn test_sum(a: i32, b: i32, expected: i32) {
+    assert_eq!(sum(a, b), expected);
+}
+```
+
+In this case, the case names will be transformed to a valid function
+names by replacing non-alphanumeric characters with `_`. For example,
+`"sum(1, 1)"` will be converted to `sum_1_1`.
+
+
 ```rust
 // This parameterized function is copied
 fn test_sum(expected: i32, a: i32, b: i32) {
@@ -172,7 +190,8 @@ test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 ## Note
 Before `0.1.5`, argument list should be distinguished by a tuple.
 
-Before `0.1.3`, it was required to provide the test module name.
+Before `0.1.3`, it was required to provide the test module name. As of
+`0.1.8` module name can be specified by a literal string.
 
 ```rust
 #[p_test(
