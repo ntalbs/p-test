@@ -16,6 +16,26 @@ enum Name {
     None,
 }
 
+impl Parse for Name {
+    fn parse(input: ParseStream) -> Result<Self> {
+        if input.peek(Ident) {
+            let name = Name::Ident(input.parse()?);
+            let _ = input.parse::<Token![,]>()?;
+            Ok(name)
+        } else if input.peek(LitStr) {
+            let name = input.parse::<LitStr>()?;
+            let _ = input.parse::<Token![,]>()?;
+            if name.value().is_empty() {
+                Ok(Name::None)
+            } else {
+                Ok(Name::LitStr(name))
+            }
+        } else {
+            Ok(Name::None)
+        }
+    }
+}
+
 /// Input for `p_test` attribute, consists of test name (optional),
 /// and a list of test cases. The test name will be used as a module name
 /// for the test. When the name is omitted, the test function name
@@ -47,23 +67,10 @@ struct TestCase {
 
 impl Parse for TestCase {
     fn parse(input: ParseStream) -> Result<Self> {
+        let name = input.parse::<Name>()?;
+
         let content;
         let _ = parenthesized!(content in input);
-        let name = if content.peek(Ident) {
-            let name = content.parse::<Ident>()?;
-            let _ = content.parse::<Token![,]>()?;
-            Name::Ident(name)
-        } else if content.peek(LitStr) {
-            let name = content.parse::<LitStr>()?;
-            let _ = content.parse::<Token![,]>()?;
-            if name.value().is_empty() {
-                Name::None
-            } else {
-                Name::LitStr(name)
-            }
-        } else {
-            Name::None
-        };
 
         let args: Vec<Expr> = Punctuated::<Expr, Token![,]>::parse_terminated(&content)?
             .into_iter()

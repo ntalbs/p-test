@@ -8,10 +8,10 @@ fn sum(a: i32, b: i32) -> i32 {
 /// - arguments: simple list
 /// - case name: Ident
 #[p_test(
-    (sum_1_1, 1, 1, 2),
-    (sum_1_2, 1, 2, 3),
-    (sum_2_2, 2, 2, 4),
-    (sum_2_3, 2, 3, 5),
+    sum_1_1, (1, 1, 2),
+    sum_1_2, (1, 2, 3),
+    sum_2_2, (2, 2, 4),
+    sum_2_3, (2, 3, 5),
 )]
 fn test_sum_no_without_module_name(a: i32, b: i32, expected: i32) {
     assert_eq!(sum(a, b), expected);
@@ -21,10 +21,10 @@ fn test_sum_no_without_module_name(a: i32, b: i32, expected: i32) {
 /// - arguments: simple list
 /// - case name: LitStr
 #[p_test(
-    ("sum(1,1)", 1, 1, 2),
-    ("sum(1,2))", 1, 2, 3),
-    ("sum(2,2)", 2, 2, 4),
-    ("sum(2,3)", 2, 3, 5),
+    "sum(1,1)", (1, 1, 2),
+    "sum(1,2)", (1, 2, 3),
+    "sum(2,2)", (2, 2, 4),
+    "sum(2,3)", (2, 3, 5),
 )]
 fn test_sum_no_without_module_name_test_case_name_litstr(a: i32, b: i32, expected: i32) {
     assert_eq!(sum(a, b), expected);
@@ -34,10 +34,10 @@ fn test_sum_no_without_module_name_test_case_name_litstr(a: i32, b: i32, expecte
 /// - arguments: tuple for function arguments, expected value is separeted.
 /// - case name: Ident
 #[p_test(
-    (sum_1_1, (1, 1), 2),
-    (sum_1_2, (1, 2), 3),
-    (sum_2_2, (2, 2), 4),
-    (sum_2_3, (2, 3), 5),
+    sum_1_1, ((1, 1), 2),
+    sum_1_2, ((1, 2), 3),
+    sum_2_2, ((2, 2), 4),
+    sum_2_3, ((2, 3), 5),
 )]
 fn test_sum_arg_tuple_without_module_name((a, b): (i32, i32), expected: i32) {
     assert_eq!(sum(a, b), expected);
