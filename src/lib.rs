@@ -1,19 +1,30 @@
 #![doc = include_str!("../README.md")]
 
 use proc_macro::TokenStream;
-use quote::quote;
+use quote::{quote, ToTokens};
 use syn::{
     parenthesized,
     parse::{Parse, ParseStream},
     parse_macro_input,
     punctuated::Punctuated,
-    Expr, Ident, ItemFn, LitStr, Result, Token,
+    Expr, Ident, ItemFn, LitBool, LitStr, Result, Token,
 };
 
 enum Name {
     Ident(Ident),
     LitStr(LitStr),
     None,
+}
+
+impl PartialEq for Name {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Name::None, Name::None) => true,
+            (Name::Ident(a), Name::Ident(b)) => a == b,
+            (Name::LitStr(a), Name::LitStr(b)) => a.value() == b.value(),
+            _ => false,
+        }
+    }
 }
 
 impl Parse for Name {
@@ -41,15 +52,33 @@ impl Parse for Name {
 /// for the test. When the name is omitted, the test function name
 /// will be used instead.
 struct Input {
+    use_args_for_case_name: bool,
     test_cases: Vec<TestCase>,
 }
 
 impl Parse for Input {
     fn parse(input: ParseStream) -> Result<Self> {
+        let use_args_for_case_name =
+            if input.peek(Ident) && input.peek2(Token![=]) && input.peek3(LitBool) {
+                let option = input.parse::<Ident>()?;
+                if option != "use_args_for_case_name" {
+                    return Err(syn::Error::new(
+                        option.span(),
+                        "Expected 'use_args_for_case_name' option",
+                    ));
+                }
+                let _ = input.parse::<Token![=]>()?;
+                let use_args_for_case_name = input.parse::<LitBool>()?.value;
+                let _ = input.parse::<Token![,]>()?;
+                use_args_for_case_name
+            } else {
+                false
+            };
         let test_cases = Punctuated::<TestCase, Token![,]>::parse_terminated(input)?
             .into_iter()
             .collect();
         Ok(Input {
+            use_args_for_case_name,
             test_cases,
         })
     }
@@ -79,7 +108,7 @@ impl Parse for TestCase {
     }
 }
 
-fn test_case_name(name: Name, counter: i32, n_all: usize) -> Ident {
+fn case_name_with_counter(name: Name, counter: i32, n_all: usize) -> Ident {
     match name {
         Name::Ident(name) => name,
         Name::LitStr(name) => Ident::new(&slugify(&name.value()), name.span()),
@@ -95,6 +124,20 @@ fn test_case_name(name: Name, counter: i32, n_all: usize) -> Ident {
             };
             Ident::new(name, proc_macro::Span::call_site().into())
         }
+    }
+}
+
+fn case_name_with_args(args: &[Expr]) -> Ident {
+    let name = args
+        .iter()
+        .map(|e| slugify(&e.to_token_stream().to_string()))
+        .collect::<Vec<_>>()
+        .join("_");
+
+    if name.is_empty() {
+        Ident::new("case", proc_macro::Span::call_site().into())
+    } else {
+        Ident::new(&name, proc_macro::Span::call_site().into())
     }
 }
 
@@ -134,7 +177,12 @@ pub fn p_test(attr: TokenStream, item: TokenStream) -> TokenStream {
     let n_all = attr_input.test_cases.len();
     for TestCase { name, args } in attr_input.test_cases {
         counter += 1;
-        let name = test_case_name(name, counter, n_all);
+        let name = if name == Name::None && attr_input.use_args_for_case_name && !args.is_empty() {
+            case_name_with_args(&args)
+        } else {
+            case_name_with_counter(name, counter, n_all)
+        };
+
         let mut arg_list = quote! {};
         for e in args {
             arg_list.extend(quote! { #e, });
