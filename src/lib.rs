@@ -21,33 +21,15 @@ enum Name {
 /// for the test. When the name is omitted, the test function name
 /// will be used instead.
 struct Input {
-    test_name: Name,
     test_cases: Vec<TestCase>,
 }
 
 impl Parse for Input {
     fn parse(input: ParseStream) -> Result<Self> {
-        let test_name = if input.peek(Ident) {
-            let test_name = input.parse::<Ident>()?;
-            let _ = input.parse::<Token![,]>()?;
-            Name::Ident(test_name)
-        } else if input.peek(LitStr) {
-            let test_name = input.parse::<LitStr>()?;
-            let _ = input.parse::<Token![,]>()?;
-            if test_name.value().is_empty() {
-                Name::None
-            } else {
-                Name::LitStr(test_name)
-            }
-        } else {
-            Name::None
-        };
-
         let test_cases = Punctuated::<TestCase, Token![,]>::parse_terminated(input)?
             .into_iter()
             .collect();
         Ok(Input {
-            test_name,
             test_cases,
         })
     }
@@ -87,14 +69,6 @@ impl Parse for TestCase {
             .into_iter()
             .collect();
         Ok(TestCase { name, args })
-    }
-}
-
-fn test_name(name: Name, test_fn_name: &Ident) -> Ident {
-    match name {
-        Name::Ident(name) => name,
-        Name::LitStr(lit_str) => Ident::new(&slugify(&lit_str.value()), lit_str.span()),
-        Name::None => test_fn_name.clone(),
     }
 }
 
@@ -166,10 +140,9 @@ pub fn p_test(attr: TokenStream, item: TokenStream) -> TokenStream {
         })
     }
 
-    let test_name = test_name(attr_input.test_name, p_test_fn_name);
     output.extend(quote! {
         #[cfg(test)]
-        mod #test_name {
+        mod #p_test_fn_name {
             use super::*;
             #test_functions
         }
