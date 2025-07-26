@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.0]
+- `use_args_for_case_name` is introduced.
+- Test case name should be specified before the arguments tuple.
+- Explicit module name specification is removed.
+
 ## [0.1.8]
 Support literal string for test name and test case name.
 
