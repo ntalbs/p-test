@@ -10,6 +10,8 @@ use syn::{
     Expr, Ident, ItemFn, LitBool, LitStr, Result, Token,
 };
 
+/// Represents the name of a test case, which can be either an identifier or a string literal.
+/// If the name is not provided, it will be `None`.
 #[derive(PartialEq)]
 enum Name {
     Some(Ident),
@@ -73,11 +75,10 @@ impl Parse for Input {
     }
 }
 
-/// Represent test case, consists of case name (optional),
-/// and a list of arguments for the test function, (case_name, args...)
+/// Represent test case, consists of case name,
+/// and a list of arguments for the test function, (case_name, args...).
 /// One of the args can be used as an expected value.
-/// If the case name is omitted, the case name will be generated
-/// in `case_{n}` format, where `n` is the case number.
+/// If the case name is omitted, the case name will be generated.
 struct TestCase {
     name: Name,
     args: Vec<Expr>,
