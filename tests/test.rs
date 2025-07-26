@@ -117,6 +117,27 @@ fn test_sum_do_not_use_args_for_case_name(a: i32, b: i32, expected: i32) {
     assert_eq!(sum(a, b), expected);
 }
 
+/// The first argument is &str.
+#[p_test(
+    ("hello", 'h'),
+    ("world", 'w'),
+)]
+fn test_string_to_first_char(s: &str, expected: char) {
+    assert_eq!(s.chars().next().unwrap(), expected);
+}
+
+/// The first argument is &str.
+/// And the arguments are used for case names.
+#[p_test(
+    use_args_for_case_name = true,
+    ("hello", 'h'),
+    ("world", 'w'),
+)]
+fn test_string_to_first_char_use_args_for_case_name(s: &str, expected: char) {
+    assert_eq!(s.chars().next().unwrap(), expected);
+}
+
+
 /// Parameterized test with no arguments.
 /// This is possible, but not very useful.
 #[p_test(
