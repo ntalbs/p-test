@@ -10,27 +10,16 @@ use syn::{
     Expr, Ident, ItemFn, LitBool, LitStr, Result, Token,
 };
 
+#[derive(PartialEq)]
 enum Name {
-    Ident(Ident),
-    LitStr(LitStr),
+    Some(Ident),
     None,
-}
-
-impl PartialEq for Name {
-    fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (Name::None, Name::None) => true,
-            (Name::Ident(a), Name::Ident(b)) => a == b,
-            (Name::LitStr(a), Name::LitStr(b)) => a.value() == b.value(),
-            _ => false,
-        }
-    }
 }
 
 impl Parse for Name {
     fn parse(input: ParseStream) -> Result<Self> {
         if input.peek(Ident) {
-            let name = Name::Ident(input.parse()?);
+            let name = Name::Some(input.parse()?);
             let _ = input.parse::<Token![,]>()?;
             Ok(name)
         } else if input.peek(LitStr) {
@@ -39,7 +28,7 @@ impl Parse for Name {
             if name.value().is_empty() {
                 Ok(Name::None)
             } else {
-                Ok(Name::LitStr(name))
+                Ok(Name::Some(Ident::new(&slugify(&name.value()), name.span())))
             }
         } else {
             Ok(Name::None)
@@ -110,8 +99,7 @@ impl Parse for TestCase {
 
 fn case_name_with_counter(name: Name, counter: i32, n_all: usize) -> Ident {
     match name {
-        Name::Ident(name) => name,
-        Name::LitStr(name) => Ident::new(&slugify(&name.value()), name.span()),
+        Name::Some(name) => name,
         Name::None => {
             let name = if n_all < 10 {
                 format!("case_{counter}")

@@ -125,5 +125,4 @@ fn test_sum_do_not_use_args_for_case_name(a: i32, b: i32, expected: i32) {
     (),
     (),
 )]
-fn dummy_test_with_no_args() {
-}
+fn dummy_test_with_no_args() {}
