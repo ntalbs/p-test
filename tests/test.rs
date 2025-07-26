@@ -4,64 +4,56 @@ fn sum(a: i32, b: i32) -> i32 {
     a + b
 }
 
-/// - case name: Ident
 #[p_test(
     sum_1_1, (1, 1, 2),
     sum_1_2, (1, 2, 3),
     sum_2_2, (2, 2, 4),
     sum_2_3, (2, 3, 5),
 )]
-fn test_sum_no_without_module_name(a: i32, b: i32, expected: i32) {
+fn test_sum_case_name_ident(a: i32, b: i32, expected: i32) {
     assert_eq!(sum(a, b), expected);
 }
 
-/// - case name: LitStr
 #[p_test(
     "sum(1,1)", (1, 1, 2),
     "sum(1,2)", (1, 2, 3),
     "sum(2,2)", (2, 2, 4),
     "sum(2,3)", (2, 3, 5),
 )]
-fn test_sum_no_without_module_name_test_case_name_litstr(a: i32, b: i32, expected: i32) {
+fn test_sum_case_name_litstr(a: i32, b: i32, expected: i32) {
     assert_eq!(sum(a, b), expected);
 }
 
-/// - case name: Ident
-/// - arguments: tuple for function arguments, expected value is separeted.
 #[p_test(
     sum_1_1, ((1, 1), 2),
     sum_1_2, ((1, 2), 3),
     sum_2_2, ((2, 2), 4),
     sum_2_3, ((2, 3), 5),
 )]
-fn test_sum_arg_tuple_without_module_name((a, b): (i32, i32), expected: i32) {
+fn test_sum_case_name_nested_tuple((a, b): (i32, i32), expected: i32) {
     assert_eq!(sum(a, b), expected);
 }
 
-/// - case name: None
 #[p_test(
     (1, 1, 2),
     (1, 2, 3),
     (2, 2, 4),
     (2, 3, 5),
 )]
-fn test_sum_no_without_module_name_no_case_name(a: i32, b: i32, expected: i32) {
+fn test_sum_no_case_name(a: i32, b: i32, expected: i32) {
     assert_eq!(sum(a, b), expected);
 }
 
-/// - case name: None
-/// - arguments: tuple for function arguments, expected value is separeted.
 #[p_test(
     ((1, 1), 2),
     ((1, 2), 3),
     ((2, 2), 4),
     ((2, 3), 5),
 )]
-fn test_sum_arg_tuple_without_module_nameno_case_name((a, b): (i32, i32), expected: i32) {
+fn test_sum_no_case_name_nested_tuple((a, b): (i32, i32), expected: i32) {
     assert_eq!(sum(a, b), expected);
 }
 
-/// number of cases is more than 10 to check that the case name is generated in correct format.
 #[p_test(
     (1, 1, 2),
     (1, 2, 3),
@@ -76,7 +68,7 @@ fn test_sum_arg_tuple_without_module_nameno_case_name((a, b): (i32, i32), expect
     (12, -1, 11),
     (13, -2, 11),
 )]
-fn test_sum_more_than_10_cases(a: i32, b: i32, expected: i32) {
+fn test_sum_more_than_10_cases_without_name(a: i32, b: i32, expected: i32) {
     assert_eq!(sum(a, b), expected);
 }
 
@@ -101,7 +93,7 @@ fn test_sum_use_args_for_case_name(a: i32, b: i32, expected: i32) {
     t3, (2, 2, 4),
     t4, (2, 3, 5),
 )]
-fn test_sum_use_args_for_case_name_with_case_name_specified(a: i32, b: i32, expected: i32) {
+fn test_sum_use_args_for_case_name_but_case_name_specified(a: i32, b: i32, expected: i32) {
     assert_eq!(sum(a, b), expected);
 }
 
@@ -113,11 +105,10 @@ fn test_sum_use_args_for_case_name_with_case_name_specified(a: i32, b: i32, expe
     (2, 2, 4),
     (2, 3, 5),
 )]
-fn test_sum_do_not_use_args_for_case_name(a: i32, b: i32, expected: i32) {
+fn test_sum_use_args_for_case_name_false(a: i32, b: i32, expected: i32) {
     assert_eq!(sum(a, b), expected);
 }
 
-/// The first argument is &str.
 #[p_test(
     ("hello", 'h'),
     ("world", 'w'),
@@ -126,8 +117,6 @@ fn test_string_to_first_char(s: &str, expected: char) {
     assert_eq!(s.chars().next().unwrap(), expected);
 }
 
-/// The first argument is &str.
-/// And the arguments are used for case names.
 #[p_test(
     use_args_for_case_name = true,
     ("hello", 'h'),
@@ -139,7 +128,7 @@ fn test_string_to_first_char_use_args_for_case_name(s: &str, expected: char) {
 
 
 /// Parameterized test with no arguments.
-/// This is possible, but not very useful.
+/// This is possible, but not useful.
 #[p_test(
     use_args_for_case_name = true,
     (),
