@@ -114,15 +114,15 @@ fn case_name_with_counter(name: Name, counter: i32, n_all: usize) -> Ident {
         Name::LitStr(name) => Ident::new(&slugify(&name.value()), name.span()),
         Name::None => {
             let name = if n_all < 10 {
-                &format!("case_{counter}")
+                format!("case_{counter}")
             } else if n_all < 100 {
-                &format!("case_{counter:02}")
+                format!("case_{counter:02}")
             } else if n_all < 1000 {
-                &format!("case_{counter:03}")
+                format!("case_{counter:03}")
             } else {
-                &format!("case_{counter}")
+                format!("case_{counter}")
             };
-            Ident::new(name, proc_macro::Span::call_site().into())
+            Ident::new(&name, proc_macro::Span::call_site().into())
         }
     }
 }
