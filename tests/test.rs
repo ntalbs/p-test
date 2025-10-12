@@ -126,7 +126,6 @@ fn test_string_to_first_char_use_args_for_case_name(s: &str, expected: char) {
     assert_eq!(s.chars().next().unwrap(), expected);
 }
 
-
 /// Parameterized test with no arguments.
 /// This is possible, but not useful.
 #[p_test(
