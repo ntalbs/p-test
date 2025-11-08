@@ -38,6 +38,29 @@ impl Parse for Name {
     }
 }
 
+/// Represent test case, consists of case name,
+/// and a list of arguments for the test function, (case_name, args...).
+/// One of the args can be used as an expected value.
+/// If the case name is omitted, the case name will be generated.
+struct TestCase {
+    name: Name,
+    args: Vec<Expr>,
+}
+
+impl Parse for TestCase {
+    fn parse(input: ParseStream) -> Result<Self> {
+        let name = input.parse::<Name>()?;
+
+        let content;
+        let _ = parenthesized!(content in input);
+
+        let args: Vec<Expr> = Punctuated::<Expr, Token![,]>::parse_terminated(&content)?
+            .into_iter()
+            .collect();
+        Ok(TestCase { name, args })
+    }
+}
+
 /// Input for `p_test` attribute, consists of test name (optional),
 /// and a list of test cases. The test name will be used as a module name
 /// for the test. When the name is omitted, the test function name
@@ -72,29 +95,6 @@ impl Parse for Input {
             use_args_for_case_name,
             test_cases,
         })
-    }
-}
-
-/// Represent test case, consists of case name,
-/// and a list of arguments for the test function, (case_name, args...).
-/// One of the args can be used as an expected value.
-/// If the case name is omitted, the case name will be generated.
-struct TestCase {
-    name: Name,
-    args: Vec<Expr>,
-}
-
-impl Parse for TestCase {
-    fn parse(input: ParseStream) -> Result<Self> {
-        let name = input.parse::<Name>()?;
-
-        let content;
-        let _ = parenthesized!(content in input);
-
-        let args: Vec<Expr> = Punctuated::<Expr, Token![,]>::parse_terminated(&content)?
-            .into_iter()
-            .collect();
-        Ok(TestCase { name, args })
     }
 }
 
