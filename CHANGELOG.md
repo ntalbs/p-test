@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.1]
+- Update comments and README.md.
+- Rearrange code.
+
 ## [1.0.0]
 - `use_args_for_case_name` is introduced. With this option, you can
   specify `p_test` to generate test names with their arguments.

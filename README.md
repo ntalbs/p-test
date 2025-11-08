@@ -110,7 +110,7 @@ fn test_sum((a, b): (i32, i32), expected: i32) {
 ```
 
 The format of the each test case is `case_name, (argument_list),`. The
-test function name `test_sum` will be used to test module name. The
+test function name `test_sum` will be used for test module name. The
 above example will be expanded like the following:
 
 ```rust
@@ -157,8 +157,8 @@ Each test case has their name, so you can find which test cases
 failed.  This is especially useful when you have long list of test
 cases.
 
-## Test case name auto generation
-If you don't specify test case names, they will be auto generated.
+## Test case name auto-generation
+If you don't specify test case names, they will be auto-generated.
 
 ```rust
 #[p_test(
@@ -173,6 +173,7 @@ fn test_sum(a: i32, b: i32, expected: i32) {
 
 In this case, the case names will be auto-generated as `case_{n}`, and
 the test output will look like the following:
+
 ```console
 $ cargo test
 ...
@@ -183,8 +184,8 @@ test test_sum_no_name::case_3 ... ok
 test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 ```
 
-You case use `use_args_for_case_name=true` if you want to use the
-values of the arguments for test case names.
+You case specify `use_args_for_case_name=true` if you want to use the
+values of the arguments for generating test case names.
 
 ```rust
 #[p_test(
