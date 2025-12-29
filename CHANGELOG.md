@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.2]
+- Remove tokio dependency (dev-dependencies)
+- Update README.md
+
 ## [1.0.1]
 - Update comments and README.md.
 - Rearrange code.
