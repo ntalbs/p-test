@@ -26,7 +26,7 @@ fn test_sum(a: i32, b: i32, expected: i32) {
 
 The above code will be expanded like the below:
 
-```rust
+```rust no_run
 fn test_sum(expected: i32, a: i32, b: i32) {
     assert_eq!(sum(a, b), expected);
 }
@@ -139,7 +139,7 @@ names by replacing non-alphanumeric characters with `_`. For example,
 
 The above code will be expanded like the below:
 
-```rust
+```rust no_run
 // This parameterized function is copied
 fn test_sum(expected: i32, a: i32, b: i32) {
     assert_eq!(sum(a, b), expected);
