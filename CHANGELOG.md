@@ -1,5 +1,8 @@
 # Changelog
 
+## [1.0.3]
+- Reject duplicate generated test case names.
+
 ## [1.0.2]
 - Remove tokio dependency (dev-dependencies)
 - Update README.md
