@@ -1,5 +1,7 @@
 #![doc = include_str!("../README.md")]
 
+use std::collections::HashSet;
+
 use proc_macro::TokenStream;
 use quote::{quote, ToTokens};
 use syn::{
@@ -164,6 +166,7 @@ pub fn p_test(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let mut counter = 0;
     let n_all = attr_input.test_cases.len();
+    let mut used_case_names = HashSet::new();
     for TestCase { name, args } in attr_input.test_cases {
         counter += 1;
         let name = if name == Name::None && attr_input.use_args_for_case_name && !args.is_empty() {
@@ -171,6 +174,18 @@ pub fn p_test(attr: TokenStream, item: TokenStream) -> TokenStream {
         } else {
             case_name_with_counter(name, counter, n_all)
         };
+
+        if !used_case_names.insert(name.to_string()) {
+            return syn::Error::new(
+                name.span(),
+                format!(
+                    "duplicate generated test case name `{}`; use explicit unique names or ensure each case produces a unique identifier",
+                    name
+                ),
+            )
+            .to_compile_error()
+            .into();
+        }
 
         let mut arg_list = quote! {};
         for e in args {
